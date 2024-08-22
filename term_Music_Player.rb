@@ -1,16 +1,27 @@
 # Ruby script to play music in the terminal
 # Author: Mainuddin Alam Irteja
 
-"""
-Function to prompt user to input song name
 
-@returns songName The name of the song with the artist
+#   print "Please give the name of the song and artist: "
+#  songName = gets.chomp
+
+$helpStr =
 """
-def promptInput()
-   print "Please give the name of the song and artist: "
-   songName = gets.chomp
-   return songName
+These are some helpful flags you can give alongside the song name.
+     -a Just play the audio
+     -v Play the video
+     -l Loop 
+
+ You can use use -help flag to bring up this menu again
+ """
+
+def introduceScript()
+
+    puts "Welcome to terminal music player script."
+    puts $helpStr
+
 end
+
 
 """
 """
@@ -18,13 +29,5 @@ def getMusic()
 
 end
 
-"""
-"""
-def musicControls()
+introduceScript()
 
-end
-
-
-# Get the song name
-sName = promptInput()
-puts "THe song name is: #{sName}"
