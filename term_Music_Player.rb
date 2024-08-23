@@ -1,9 +1,7 @@
 # Ruby script to play music in the terminal
 # Author: Mainuddin Alam Irteja
 
-
-#   print "Please give the name of the song and artist: "
-#  songName = gets.chomp
+require 'tty-prompt'
 
 $helpStr =
 """
@@ -26,8 +24,13 @@ end
 """
 """
 def getMusic()
-
+    prompt = TTY::Prompt.new
+    search_query = prompt.ask("What music would you like to search for?")
+    
+    # Use the search query with yt-dlp and mpv
+    system("yt-dlp -f bestaudio --extract-audio --audio-format mp3 'ytsearch:#{search_query}' -o - | mpv -")
+    puts "What to do next?: "
 end
 
 introduceScript()
-
+getMusic()
