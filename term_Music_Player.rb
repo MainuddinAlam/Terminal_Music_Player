@@ -1,36 +1,42 @@
 # Ruby script to play music in the terminal
 # Author: Mainuddin Alam Irteja
 
-require 'tty-prompt'
+require 'net/http'
+
 
 $helpStr =
 """
 These are some helpful flags you can give alongside the song name.
-     -a Just play the audio
-     -v Play the video
-     -l Loop 
-
- You can use use -help flag to bring up this menu again
+     -a Just play the audio version
+     -v Play the video version 
+     -l Loop
+     -help flag to bring up this menu again
  """
 
+"""
+Function to introduce the terminal music player script to the user
+"""
 def introduceScript()
-
     puts "Welcome to terminal music player script."
+    puts "Listen to your favourite songs on the terminal"
     puts $helpStr
-
 end
 
 
 """
+Function to get the user song name
 """
-def getMusic()
-    prompt = TTY::Prompt.new
-    search_query = prompt.ask("What music would you like to search for?")
-    
-    # Use the search query with yt-dlp and mpv
-    system("yt-dlp -f bestaudio --extract-audio --audio-format mp3 'ytsearch:#{search_query}' -o - | mpv -")
-    puts "What to do next?: "
+def getUserSongName()
+    # Prompt user to give the song name
+    print "Give the song name, artist and flags: "
+    getSongName = gets.chomp
+    # Split the user text into the song query and flags
+    query = getSongName.split.reject { |part| part.start_with?('-') }.join(' ')
+    flags = getSongName.split.select { |part| part.start_with?('-') }
+    puts "Query: #{query}"
+    puts "Flags: #{flags.join(', ')}"
+
 end
 
 introduceScript()
-getMusic()
+getUserSongName()
