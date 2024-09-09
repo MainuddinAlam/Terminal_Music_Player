@@ -1,8 +1,7 @@
 # Ruby script to play music in the terminal
 # Author: Mainuddin Alam Irteja
 
-require 'net/http'
-
+require 'open3'
 
 $helpStr =
 """
@@ -20,6 +19,26 @@ def introduceScript()
     puts "Welcome to terminal music player script."
     puts "Listen to your favourite songs on the terminal"
     puts $helpStr
+end 
+
+"""
+Function to display the song names
+
+@param sQuery The song name
+"""
+def displaySongs(sQuery)
+    # Contruct the song search command
+    searchSong = "yt-dlp 'ytsearch10:#{sQuery}' --get-title --get-id --get-url"
+    
+    # Check whether the search command executed or not
+    songResults, error, status = Open3.capture3(searchSong)
+    if status.success?
+      songResults = songResults.split("\n")
+      puts "Command succeeded: #{songResults}"
+    else
+      puts "Detected errors while executing command: #{error}"
+    end
+    
 end
 
 
@@ -31,10 +50,9 @@ def getUserSongName()
     print "Give the song name, artist and flags: "
     getSongName = gets.chomp
     # Split the user text into the song query and flags
-    query = getSongName.split.reject { |part| part.start_with?('-') }.join(' ')
+    songQuery = getSongName.split.reject { |part| part.start_with?('-') }.join(' ')
     flags = getSongName.split.select { |part| part.start_with?('-') }
-    puts "Query: #{query}"
-    puts "Flags: #{flags.join(', ')}"
+    displaySongs(songQuery)
 
 end
 
