@@ -34,7 +34,15 @@ def displaySongs(sQuery)
     songResults, error, status = Open3.capture3(searchSong)
     if status.success?
       songResults = songResults.split("\n")
-      puts "Command succeeded: #{songResults}"
+     
+      # Display the songs
+      getSongs = songResults.each_slice(3).map do |sTitle, sId, sUrl|
+        { title: sTitle, url: sUrl }
+      end
+      getSongs.each_with_index do |song, index|
+        puts "#{index + 1}. #{song[:title]} (#{song[:url]})\n"
+      end
+    # Let user know that errors were encountered   
     else
       puts "Detected errors while executing command: #{error}"
     end
