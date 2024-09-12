@@ -27,6 +27,7 @@ Function to display the song names
 @param sQuery The song name
 """
 def displaySongs(sQuery)
+    counter = 0
     # Contruct the song search command
     searchSong = "yt-dlp 'ytsearch10:#{sQuery}' --get-title --get-id --get-url"
     
@@ -40,7 +41,11 @@ def displaySongs(sQuery)
         { title: sTitle, url: sUrl }
       end
       getSongs.each_with_index do |song, index|
-        puts "#{index + 1}. #{song[:title]} (#{song[:url]})\n"
+        # If title starts with http, go to the next one
+        next if song[:title].include?('http')
+        # Display the songs
+        counter += 1
+        puts "#{counter}. #{song[:title]}"
       end
     # Let user know that errors were encountered   
     else
@@ -48,7 +53,6 @@ def displaySongs(sQuery)
     end
     
 end
-
 
 """
 Function to get the user song name
