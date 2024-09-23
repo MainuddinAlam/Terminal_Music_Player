@@ -2,6 +2,9 @@
 # Author: Mainuddin Alam Irteja
 
 require 'open3'
+require 'tty-prompt'
+
+$prompt = TTY::Prompt.new
 
 $helpStr =
 """
@@ -16,7 +19,7 @@ These are some helpful flags you can give alongside the song name.
 Function to introduce the terminal music player script to the user
 """
 def introduceScript()
-    puts "Welcome to terminal music player script."
+    puts "Welcome to terminal music player script."  
     puts "Listen to your favourite songs on the terminal"
     puts $helpStr
 end 
@@ -28,6 +31,8 @@ Function to display the song names
 """
 def displaySongs(sQuery)
     counter = 0
+    getSongs = ""
+    songTitle = ""
     # Contruct the song search command
     searchSong = "yt-dlp 'ytsearch10:#{sQuery}' --get-title --get-id --get-url"
     
@@ -41,17 +46,25 @@ def displaySongs(sQuery)
         { title: sTitle, url: sUrl }
       end
       getSongs.each_with_index do |song, index|
-        # If title starts with http, go to the next one
-        next if song[:title].include?('http')
+        songTitle = song[:title]
+        # Filter song titles so that the appropriate song titles are displayed
+        next if songTitle.match?(/^\w{10,}$/) || songTitle.match?(/^\w{11}$/)
+        next if songTitle.include?('http') || songTitle.length < 3
+        next unless songTitle.match?(/[a-zA-Z]/)
         # Display the songs
         counter += 1
-        puts "#{counter}. #{song[:title]}"
+        puts "#{counter}. #{songTitle}"
+      
       end
+      # Prompt user to pick which version to play
+      print "\nChoose the number to select which version to play: "
+      getSongNum = gets.chomp
+      puts "#{getSongNum}. #{getSongs[getSongNum.to_i - 1][:title]}"
     # Let user know that errors were encountered   
     else
       puts "Detected errors while executing command: #{error}"
     end
-    
+   
 end
 
 """
