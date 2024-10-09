@@ -25,14 +25,16 @@ def introduceScript()
 end 
 
 """
-Function to display the song names
+Function to display the song names and to choose the desired version
 
 @param sQuery The song name
+@returns The desired song version of the song name
 """
-def displaySongs(sQuery)
+def displayAndChooseSongs(sQuery)
+    # Initializing local variables needed for the function
+    songsHash = {}
     counter = 0
-    getSongs = ""
-    songTitle = ""
+    desiredSongVersion = nil
     # Contruct the song search command
     searchSong = "yt-dlp 'ytsearch10:#{sQuery}' --get-title --get-id --get-url"
     
@@ -54,17 +56,20 @@ def displaySongs(sQuery)
         # Display the songs
         counter += 1
         puts "#{counter}. #{songTitle}"
-      
+        # Store the counter variable with song details in the hash
+        songsHash[counter] = [song[:title], song[:url]]
       end
       # Prompt user to pick which version to play
       print "\nChoose the number to select which version to play: "
       getSongNum = gets.chomp
-      puts "#{getSongNum}. #{getSongs[getSongNum.to_i - 1][:title]}"
+      songInfo = songsHash[getSongNum.to_i]
+      # Assign the user chosen song version to desiredSongVersion to return it
+      desiredSongVersion = songInfo
     # Let user know that errors were encountered   
     else
       puts "Detected errors while executing command: #{error}"
     end
-   
+    return desiredSongVersion
 end
 
 """
@@ -77,7 +82,9 @@ def getUserSongName()
     # Split the user text into the song query and flags
     songQuery = getSongName.split.reject { |part| part.start_with?('-') }.join(' ')
     flags = getSongName.split.select { |part| part.start_with?('-') }
-    displaySongs(songQuery)
+    songVersion = displayAndChooseSongs(songQuery)
+    # DIsplay to the user the version of the song he has chosen
+    puts "You have chosen #{songVersion[0]}"
 
 end
 
