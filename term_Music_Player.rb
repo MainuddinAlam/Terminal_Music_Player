@@ -47,22 +47,27 @@ def displayAndChooseSongs(sQuery)
       getSongs = songResults.each_slice(3).map do |sTitle, sId, sUrl|
         { title: sTitle, url: sUrl }
       end
+
+      # Loop through the songs to filter the best ones
       getSongs.each_with_index do |song, index|
         songTitle = song[:title]
         # Filter song titles so that the appropriate song titles are displayed
         next if songTitle.match?(/^\w{10,}$/) || songTitle.match?(/^\w{11}$/)
         next if songTitle.include?('http') || songTitle.length < 3
         next unless songTitle.match?(/[a-zA-Z]/)
+
         # Display the songs
         counter += 1
         puts "#{counter}. #{songTitle}"
         # Store the counter variable with song details in the hash
         songsHash[counter] = [song[:title], song[:url]]
       end
+
       # Prompt user to pick which version to play
       print "\nChoose the number to select which version to play: "
       getSongNum = gets.chomp
       songInfo = songsHash[getSongNum.to_i]
+
       # Assign the user chosen song version to desiredSongVersion to return it
       desiredSongVersion = songInfo
     # Let user know that errors were encountered   
@@ -74,6 +79,9 @@ end
 
 """
 Function to get the user song name
+
+@returns userSong The song chosen by the user
+@returns flags The flags chosen by the user
 """
 def getUserSongName()
     # Prompt user to give the song name
@@ -82,11 +90,27 @@ def getUserSongName()
     # Split the user text into the song query and flags
     songQuery = getSongName.split.reject { |part| part.start_with?('-') }.join(' ')
     flags = getSongName.split.select { |part| part.start_with?('-') }
-    songVersion = displayAndChooseSongs(songQuery)
-    # DIsplay to the user the version of the song he has chosen
-    puts "You have chosen #{songVersion[0]}"
-
+    userSong = displayAndChooseSongs(songQuery)
+    return userSong, flags
 end
 
+"""
+Function to play the given song
+
+@param givenSong The song chosen by the user
+"""
+def playSong(givenSong)
+  #
+end
+
+# Introduce the program to the user
 introduceScript()
-getUserSongName()
+
+# Get the song name
+snName, snFlags = getUserSongName()
+
+# DIsplay to the user the chosen song
+puts "You have chosen #{snName[0]} with #{snFlags}"
+
+# Play the given song
+
