@@ -45,7 +45,7 @@ def displayAndChooseSongs(sQuery)
      
       # Display the songs
       getSongs = songResults.each_slice(3).map do |sTitle, sId, sUrl|
-        { title: sTitle, url: sUrl }
+        { title: sTitle, id: sId, url: sUrl }
       end
 
       # Loop through the songs to filter the best ones
@@ -60,7 +60,7 @@ def displayAndChooseSongs(sQuery)
         counter += 1
         puts "#{counter}. #{songTitle}"
         # Store the counter variable with song details in the hash
-        songsHash[counter] = [song[:title], song[:url]]
+        songsHash[counter] = [song[:title], song[:id], song[:url]]
       end
 
       # Prompt user to pick which version to play
@@ -99,8 +99,19 @@ Function to play the given song
 
 @param givenSong The song chosen by the user
 """
-def playSong(givenSong)
-  #
+def playSong(givenSong, givenFlags)
+  # Construct song search id
+  songId = "https://www.youtube.com/watch?v=#{givenSong[1]}"
+  # Play only the audio of the song
+  if givenFlags.include?("-a") || givenFlags.empty?
+    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video -")
+   # Play only the video with the audio of the song
+  elsif givenFlags.include?("-v")
+    system("yt-dlp --no-playlist -o - '#{songId}' | mpv -")
+  else 
+    #
+  end
+ 
 end
 
 # Introduce the program to the user
@@ -110,7 +121,8 @@ introduceScript()
 snName, snFlags = getUserSongName()
 
 # DIsplay to the user the chosen song
-puts "You have chosen #{snName[0]} with #{snFlags}"
+puts "You have chosen #{snName[1]} with #{snFlags}"
 
 # Play the given song
+playSong(snName, snFlags)
 
