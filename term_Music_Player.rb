@@ -3,8 +3,12 @@
 
 require 'open3'
 require 'tty-prompt'
+require 'tty-reader'
 
+# Creating global variables for the script
 $prompt = TTY::Prompt.new
+reader = TTY::Reader.new
+songPlaying = false
 
 $helpStr =
 """
@@ -13,6 +17,9 @@ These are some helpful flags you can give alongside the song name.
      -v Play the video version 
      -l Loop
      -help flag to bring up this menu again
+
+These are some helpful keys that you can use while the song is playing.
+     L - To loop/unloop a song
  """
 
 """
@@ -22,7 +29,7 @@ def introduceScript()
     puts "Welcome to terminal music player script."  
     puts "Listen to your favourite songs on the terminal"
     puts $helpStr
-end 
+end # End of the introduceScript() function
 
 """
 Function to display the song names and to choose the desired version
@@ -46,7 +53,7 @@ def displayAndChooseSongs(sQuery)
       # Display the songs
       getSongs = songResults.each_slice(3).map do |sTitle, sId, sUrl|
         { title: sTitle, id: sId, url: sUrl }
-      end
+      end # Loop ends
 
       # Loop through the songs to filter the best ones
       getSongs.each_with_index do |song, index|
@@ -61,7 +68,7 @@ def displayAndChooseSongs(sQuery)
         puts "#{counter}. #{songTitle}"
         # Store the counter variable with song details in the hash
         songsHash[counter] = [song[:title], song[:id], song[:url]]
-      end
+      end # Loop ends
 
       # Prompt user to pick which version to play
       print "\nChoose the number to select which version to play: "
@@ -73,9 +80,9 @@ def displayAndChooseSongs(sQuery)
     # Let user know that errors were encountered   
     else
       puts "Detected errors while executing command: #{error}"
-    end
+    end # End if-else block
     return desiredSongVersion
-end
+end # End of the displayAndChooseSongs function
 
 """
 Function to get the user song name
@@ -87,32 +94,55 @@ def getUserSongName()
     # Prompt user to give the song name
     print "Give the song name, artist and flags: "
     getSongName = gets.chomp
+
     # Split the user text into the song query and flags
     songQuery = getSongName.split.reject { |part| part.start_with?('-') }.join(' ')
     flags = getSongName.split.select { |part| part.start_with?('-') }
     userSong = displayAndChooseSongs(songQuery)
     return userSong, flags
-end
+end # End the getUserSongName() function
 
 """
-Function to play the given song
+Helper function to check flags
+
+@param songId The song id
+@param givenFlags The flags given by the user 
+"""
+def checkFlags(songId, givenFlags)
+  # Play only the audio of the song
+  if givenFlags.include?("-a") || givenFlags.empty?
+    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video -")
+  # Play only the video with the audio of the song
+  elsif givenFlags.include?("-v")
+    system("yt-dlp --no-playlist -o - '#{songId}' | mpv -")
+  # Exit the program safely
+  else
+    exit(0)
+  end # End the if-elsif-else block
+end # End the checkFlags helper function
+
+"""
+Function to play the given song.
 
 @param givenSong The song chosen by the user
+@param givenFlags The flags given by the user
 """
 def playSong(givenSong, givenFlags)
   # Construct song search id
   songId = "https://www.youtube.com/watch?v=#{givenSong[1]}"
-  # Play only the audio of the song
-  if givenFlags.include?("-a") || givenFlags.empty?
-    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video -")
-   # Play only the video with the audio of the song
-  elsif givenFlags.include?("-v")
-    system("yt-dlp --no-playlist -o - '#{songId}' | mpv -")
-  else 
-    #
-  end
- 
-end
+
+  # Check if user has included the loop flag
+  if givenFlags.include?("-l")
+    songPlaying = true
+    # Continuously play the song
+    while songPlaying == true
+      checkFlags(songId, givenFlags)
+    end # End while loop
+  # Execute the non loop code
+  else
+    checkFlags(songId, givenFlags)
+  end # End if-else block
+end # End of the playSong function
 
 # Introduce the program to the user
 introduceScript()
