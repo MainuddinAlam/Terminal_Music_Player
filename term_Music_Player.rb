@@ -8,7 +8,7 @@ require 'tty-reader'
 # Creating global variables for the script
 $prompt = TTY::Prompt.new
 reader = TTY::Reader.new
-songPlaying = false
+songLooping = false
 
 $helpStr =
 """
@@ -133,9 +133,9 @@ def playSong(givenSong, givenFlags)
 
   # Check if user has included the loop flag
   if givenFlags.include?("-l")
-    songPlaying = true
+    songLooping = true
     # Continuously play the song
-    while songPlaying == true
+    while songLooping == true
       checkFlags(songId, givenFlags)
     end # End while loop
   # Execute the non loop code
@@ -144,13 +144,45 @@ def playSong(givenSong, givenFlags)
   end # End if-else block
 end # End of the playSong function
 
+# Initialize a thread 
+Thread.new do
+  # Continuously this loop will run
+  loop do
+    # Needed to check the keys are being pressed
+    keysPressed = reader.read_keypress(nonblock: true)
+
+    # Check which keys are being pressed 
+    case keysPressed
+
+    # Check if the key 'l' is being pressed 
+    when 'l'
+      # If the song is looping, stop it
+      if songLooping == true
+        songLooping = false
+      # If song is not looping, loop it
+      else
+        songLooping = true
+      end # End if-else block
+    # Exit the program if user presses the key 'e'
+    when 'e'
+      puts "You pressed: #{keysPressed}. It will exit the program."
+      exit(0)
+    # Just the let the user know he pressed a letter that does nothing
+    else
+      puts "You pressed: #{keysPressed}. It does nothing"
+    
+    end
+    sleep 0.1  # To reduce CPU usage
+  end
+end
+
 # Introduce the program to the user
 introduceScript()
 
 # Get the song name
 snName, snFlags = getUserSongName()
 
-# DIsplay to the user the chosen song
+# Display to the user the chosen song
 puts "You have chosen #{snName[1]} with #{snFlags}"
 
 # Play the given song
