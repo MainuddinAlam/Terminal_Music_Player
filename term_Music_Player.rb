@@ -130,13 +130,14 @@ Function to play the given song.
 def playSong(givenSong, givenFlags)
   # Construct song search id
   songId = "https://www.youtube.com/watch?v=#{givenSong[1]}"
-
+  
   # Check if user has included the loop flag
   if givenFlags.include?("-l")
     songLooping = true
     # Continuously play the song
-    while songLooping == true
+    while songLooping
       checkFlags(songId, givenFlags)
+  
     end # End while loop
   # Execute the non loop code
   else
@@ -144,8 +145,9 @@ def playSong(givenSong, givenFlags)
   end # End if-else block
 end # End of the playSong function
 
+
 # Initialize a thread 
-Thread.new do
+thread = Thread.new do
   # Continuously this loop will run
   loop do
     # Needed to check the keys are being pressed
@@ -157,7 +159,7 @@ Thread.new do
     # Check if the key 'l' is being pressed 
     when 'l'
       # If the song is looping, stop it
-      if songLooping == true
+      if songLooping
         songLooping = false
       # If song is not looping, loop it
       else
