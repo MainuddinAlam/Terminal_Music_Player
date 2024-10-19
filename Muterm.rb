@@ -7,15 +7,12 @@ require 'tty-reader'
 
 # Creating global variables for the script
 $prompt = TTY::Prompt.new
-reader = TTY::Reader.new
-songLooping = false
 $thread = nil
 $helpStr =
 """
 These are some helpful flags you can give alongside the song name.
      -a Just play the audio version
      -v Play the video version 
-     -l Loop
      -help flag to bring up this menu again
 
 These are some helpful keys that you can use while the song is playing.
@@ -24,6 +21,9 @@ These are some helpful keys that you can use while the song is playing.
  """
 
 def executeThread()
+  reader = TTY::Reader.new
+  songLooping = false
+  volume = 60  # Starting volume at 60%
   # Initialize a thread 
   $thread = Thread.new do
     # Continuously this loop will run
@@ -144,24 +144,6 @@ def getUserSongName()
     return userSong, flags
 end # End the getUserSongName() function
 
-"""
-Helper function to check flags
-
-@param songId The song id
-@param givenFlags The flags given by the user 
-"""
-def checkFlags(songId, givenFlags)
-  # Play only the audio of the song
-  if givenFlags.include?("-a") || givenFlags.empty?
-    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video -")
-  # Play only the video with the audio of the song
-  elsif givenFlags.include?("-v")
-    system("yt-dlp --no-playlist -o - '#{songId}' | mpv -")
-  # Exit the program safely
-  else
-    exit(0)
-  end # End the if-elsif-else block
-end # End the checkFlags helper function
 
 """
 Function to play the given song.
@@ -174,18 +156,17 @@ def playSong(givenSong, givenFlags)
   songId = "https://www.youtube.com/watch?v=#{givenSong[1]}"
   executeThread()
   $thread.run
-  # Check if user has included the loop flag
-  if givenFlags.include?("-l")
-    songLooping = true
-    # Continuously play the song
-    while songLooping
-      checkFlags(songId, givenFlags)
   
-    end # End while loop
-  # Execute the non loop code
+  # Play only the audio of the song
+  if givenFlags.include?("-a") || givenFlags.empty?
+    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video -")
+  # Play only the video with the audio of the song
+  elsif givenFlags.include?("-v")
+    system("yt-dlp --no-playlist -o - '#{songId}' | mpv -")
+  # Exit the program safely
   else
-    checkFlags(songId, givenFlags)
-  end # End if-else block
+    exit(0)
+  end
 end # End of the playSong function
 
 """
