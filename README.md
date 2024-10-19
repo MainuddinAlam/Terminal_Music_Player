@@ -1,6 +1,6 @@
 # Terminal_Music_Player
-Project to play music in the terminal
-Currently under development
+* Project to play music in the terminal.
+* Currently under development.
 
 ## Reasons for making this project
 

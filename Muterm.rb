@@ -9,7 +9,7 @@ require 'tty-reader'
 $prompt = TTY::Prompt.new
 reader = TTY::Reader.new
 songLooping = false
-
+$thread = nil
 $helpStr =
 """
 These are some helpful flags you can give alongside the song name.
@@ -20,7 +20,49 @@ These are some helpful flags you can give alongside the song name.
 
 These are some helpful keys that you can use while the song is playing.
      L - To loop/unloop a song
+     M - Bring up menu to play new song
  """
+
+def executeThread()
+  # Initialize a thread 
+  $thread = Thread.new do
+    # Continuously this loop will run
+    loop do
+      # Needed to check the keys are being pressed
+      keysPressed = reader.read_keypress(nonblock: true)
+
+      # Check which keys are being pressed 
+      case keysPressed
+    
+      # Check if the key 'l' is being pressed 
+      when 'l'
+        # If the song is looping, stop it
+        if songLooping
+          songLooping = false
+        # If song is not looping, loop it
+        else
+          songLooping = true
+        end # End if-else block
+      # Exit the program if user presses the key 'e'
+      when 'm'
+        scriptRun()
+        Thread.stop
+      when 'e'
+        Thread.kill
+        puts "You pressed: #{keysPressed}. It will exit the program."
+        exit(0)
+      # Just the let the user know he pressed a letter that does nothing
+      else
+        Thread.kill
+        puts "You pressed: #{keysPressed}. It will also exit the program"
+        exit(0)
+    
+      end
+      sleep 0.1  # To reduce CPU usage
+    end
+  end
+
+end # Ends the executeThread function
 
 """
 Function to introduce the terminal music player script to the user
@@ -130,7 +172,8 @@ Function to play the given song.
 def playSong(givenSong, givenFlags)
   # Construct song search id
   songId = "https://www.youtube.com/watch?v=#{givenSong[1]}"
-  
+  executeThread()
+  $thread.run
   # Check if user has included the loop flag
   if givenFlags.include?("-l")
     songLooping = true
@@ -145,48 +188,26 @@ def playSong(givenSong, givenFlags)
   end # End if-else block
 end # End of the playSong function
 
+"""
+Function to run the script.
+"""
+def scriptRun()
+  $thread.kill
+  # Introduce the program to the user
+  introduceScript()
 
-# Initialize a thread 
-thread = Thread.new do
-  # Continuously this loop will run
-  loop do
-    # Needed to check the keys are being pressed
-    keysPressed = reader.read_keypress(nonblock: true)
+  # Get the song name
+  snName, snFlags = getUserSongName()
 
-    # Check which keys are being pressed 
-    case keysPressed
+  # Display to the user the chosen song
+  puts "You have chosen #{snName[1]} with #{snFlags}"
 
-    # Check if the key 'l' is being pressed 
-    when 'l'
-      # If the song is looping, stop it
-      if songLooping
-        songLooping = false
-      # If song is not looping, loop it
-      else
-        songLooping = true
-      end # End if-else block
-    # Exit the program if user presses the key 'e'
-    when 'e'
-      puts "You pressed: #{keysPressed}. It will exit the program."
-      exit(0)
-    # Just the let the user know he pressed a letter that does nothing
-    else
-      puts "You pressed: #{keysPressed}. It does nothing"
-    
-    end
-    sleep 0.1  # To reduce CPU usage
-  end
-end
+  # Play the given song
+  playSong(snName, snFlags)
+end # End the scriptRun function
 
-# Introduce the program to the user
-introduceScript()
+executeThread()
+scriptRun()
 
-# Get the song name
-snName, snFlags = getUserSongName()
 
-# Display to the user the chosen song
-puts "You have chosen #{snName[1]} with #{snFlags}"
-
-# Play the given song
-playSong(snName, snFlags)
 
