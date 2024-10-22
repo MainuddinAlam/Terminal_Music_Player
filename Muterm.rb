@@ -12,18 +12,19 @@ $helpStr =
 """
 These are some helpful flags you can give alongside the song name.
      -a Just play the audio version
-     -v Play the video version 
-     -help flag to bring up this menu again
+     -v Play the video version
+     -o List the song options found to select desired one
 
 These are some helpful keys that you can use while the song is playing.
      L - To loop/unloop a song
      M - Bring up menu to play new song
  """
+ $songVolume = 60  # Starting volume at 60%
 
 def executeThread()
   reader = TTY::Reader.new
   songLooping = false
-  volume = 60  # Starting volume at 60%
+  
   # Initialize a thread 
   $thread = Thread.new do
     # Continuously this loop will run
@@ -159,10 +160,10 @@ def playSong(givenSong, givenFlags)
   
   # Play only the audio of the song
   if givenFlags.include?("-a") || givenFlags.empty?
-    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video -")
+    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video --volume=#{$songVolume} -")
   # Play only the video with the audio of the song
   elsif givenFlags.include?("-v")
-    system("yt-dlp --no-playlist -o - '#{songId}' | mpv -")
+    system("yt-dlp --no-playlist -o - '#{songId}' | mpv --volume=#{$songVolume} -")
   # Exit the program safely
   else
     exit(0)
