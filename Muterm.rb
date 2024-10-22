@@ -3,7 +3,7 @@
 
 require 'open3'
 require 'tty-prompt'
-require 'tty-reader'
+require 'io/console'
 
 # Creating global variables for the script
 $prompt = TTY::Prompt.new
@@ -14,62 +14,22 @@ These are some helpful flags you can give alongside the song name.
      -a Just play the audio version
      -v Play the video version
      -o List the song options found to select desired one
+     -l loop the song
 
 These are some helpful keys that you can use while the song is playing.
-     L - To loop/unloop a song
-     M - Bring up menu to play new song
+     S - To stop looping
+     E - To exit the program
+     M - Mute
      P - Pause the song
  """
- $songVolume = 60  # Starting volume at 60%
+ $songVolume = 65  
+ $songLooping = false
 
-def executeThread()
-  reader = TTY::Reader.new
-  songLooping = false
-  
-  # Initialize a thread 
-  $thread = Thread.new do
-    # Continuously this loop will run
-    loop do
-      # Needed to check the keys are being pressed
-      keysPressed = reader.read_keypress(nonblock: true)
-
-      # Check which keys are being pressed 
-      case keysPressed
-    
-      # Check if the key 'l' is being pressed 
-      when 'l'
-        # If the song is looping, stop it
-        if songLooping
-          songLooping = false
-        # If song is not looping, loop it
-        else
-          songLooping = true
-        end # End if-else block
-      # Exit the program if user presses the key 'e'
-      when 'm'
-        scriptRun()
-        Thread.stop
-      when 'e'
-        Thread.kill
-        puts "You pressed: #{keysPressed}. It will exit the program."
-        exit(0)
-      # Just the let the user know he pressed a letter that does nothing
-      else
-        Thread.kill
-        puts "You pressed: #{keysPressed}. It will also exit the program"
-        exit(0)
-    
-      end
-      sleep 0.1  # To reduce CPU usage
-    end
-  end
-
-end # Ends the executeThread function
 
 """
 Function to introduce the terminal music player script to the user.
 """
-def introduceScript()
+def introduceScript
     puts "Welcome to terminal music player script."  
     puts "Listen to your favourite songs on the terminal"
     puts $helpStr
@@ -143,7 +103,7 @@ Function to get the user song name.
 @returns userSong The song chosen by the user
 @returns flags The flags chosen by the user
 """
-def getUserSongName()
+def getUserSongName
     # Prompt user to give the song name
     print "Give the song name, artist and flags: "
     getSongName = gets.chomp
@@ -155,6 +115,24 @@ def getUserSongName()
     return userSong, flags
 end # End the getUserSongName() function
 
+"""
+Function to implement functionality of the flags
+
+@param givenSong The song chosen by the user
+@param givenFlags The flags given by the user
+"""
+def flagCode(songId, givenFlags)
+    # Play only the audio of the song
+    if givenFlags.include?("-a") || givenFlags.empty? || givenFlags.include?("-o")
+      system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video --volume=#{$songVolume} -")
+    # Play only the video with the audio of the song
+    elsif givenFlags.include?("-v") || givenFlags.include?("-o")
+      system("yt-dlp --no-playlist -o - '#{songId}' | mpv --volume=#{$songVolume} -")
+    # Exit the program safely
+    else
+      exit(0)
+    end # End if-elsif-else block
+end # End flagCode function
 
 """
 Function to play the given song.
@@ -165,31 +143,59 @@ Function to play the given song.
 def playSong(givenSong, givenFlags)
   # Construct song search id
   songId = "https://www.youtube.com/watch?v=#{givenSong[1]}"
-  executeThread()
+  executeThread
   $thread.run
-  
-  # Play only the audio of the song
-  if givenFlags.include?("-a") || givenFlags.empty? || givenFlags.include?("-o")
-    system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video --volume=#{$songVolume} -")
-  # Play only the video with the audio of the song
-  elsif givenFlags.include?("-v") || givenFlags.include?("-o")
-    system("yt-dlp --no-playlist -o - '#{songId}' | mpv --volume=#{$songVolume} -")
-  # Exit the program safely
+  if givenFlags.include?("-l")
+    $songLooping = true
+    while $songLooping
+      flagCode(songId, givenFlags)
+    end
+
   else
-    exit(0)
+    flagCode(songId, givenFlags)
   end
+
 end # End of the playSong function
+
+"""
+Function to execute thread
+"""
+def executeThread
+# Initialize a thread to listen for key presses
+$thread = Thread.new do
+  loop do
+    # Get the key that was pressed
+    key = STDIN.getch
+
+    # Check for specific key presses
+    case key
+    when 's'
+      # Toggle looping when 'l' is pressed
+      $songLooping = !$songLooping
+    when 'e'
+      # Exit the program when 'e' is pressed
+      puts "Exiting program."
+      exit(0)
+      Thread.kill
+    else
+      # Ignore other keys
+      puts "You pressed: #{key}, but it does nothing."
+    end
+
+    sleep 0.1 
+  end
+end
+end # End the executeThread function
 
 """
 Function to run the script.
 """
-def scriptRun()
-  $thread.kill
+def scriptRun
   # Introduce the program to the user
   introduceScript()
 
   # Get the song name
-  snName, snFlags = getUserSongName()
+  snName, snFlags = getUserSongName
 
   # Display to the user the chosen song
   puts "Playing #{snName[0]} with #{snFlags}"
@@ -199,8 +205,4 @@ def scriptRun()
 end # End the scriptRun function
 
 # Execute the thread function and the run the main program script
-executeThread()
-scriptRun()
-
-
-
+scriptRun

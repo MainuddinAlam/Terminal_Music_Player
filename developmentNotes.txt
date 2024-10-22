@@ -1,8 +1,0 @@
-Development notes to keep track of what to do
-
-1) Develop the functionality for the -o flag (Solved)
-2) Volume controls with up and down arrow keys
-3) Looping controls
-4) Move song forward and backward using left and right arrow keys
-5) Prompt user for another song if he presses a key while another song is playing
-6) Provide a pause functionality
