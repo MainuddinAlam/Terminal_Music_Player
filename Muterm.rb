@@ -18,6 +18,7 @@ These are some helpful flags you can give alongside the song name.
 These are some helpful keys that you can use while the song is playing.
      L - To loop/unloop a song
      M - Bring up menu to play new song
+     P - Pause the song
  """
  $songVolume = 60  # Starting volume at 60%
 
@@ -66,7 +67,7 @@ def executeThread()
 end # Ends the executeThread function
 
 """
-Function to introduce the terminal music player script to the user
+Function to introduce the terminal music player script to the user.
 """
 def introduceScript()
     puts "Welcome to terminal music player script."  
@@ -75,12 +76,13 @@ def introduceScript()
 end # End of the introduceScript() function
 
 """
-Function to display the song names and to choose the desired version
+Function to display the song names and to choose the desired version.
 
 @param sQuery The song name
+@param givenFlags The flags given by the user
 @returns The desired song version of the song name
 """
-def displayAndChooseSongs(sQuery)
+def displayAndChooseSongs(sQuery, givenFlags)
     # Initializing local variables needed for the function
     songsHash = {}
     counter = 0
@@ -106,20 +108,28 @@ def displayAndChooseSongs(sQuery)
         next if songTitle.include?('http') || songTitle.length < 3
         next unless songTitle.match?(/[a-zA-Z]/)
 
-        # Display the songs
+        # Display the songs if the -o flag is given
         counter += 1
-        puts "#{counter}. #{songTitle}"
+        if givenFlags.include?("-o")
+          puts "#{counter}. #{songTitle}"
+        end # End the if block
         # Store the counter variable with song details in the hash
         songsHash[counter] = [song[:title], song[:id], song[:url]]
       end # Loop ends
+      
+      # Assign the desired song version to the first song in the hash if no -o flag is given
+      desiredSongVersion = songsHash[1]
 
-      # Prompt user to pick which version to play
-      print "\nChoose the number to select which version to play: "
-      getSongNum = gets.chomp
-      songInfo = songsHash[getSongNum.to_i]
+      # Check that the -o flag is given
+      if givenFlags.include?("-o")
+        # Prompt user to pick which version to play
+        print "\nChoose the number to select which version to play: "
+        getSongNum = gets.chomp
+        songInfo = songsHash[getSongNum.to_i]
 
-      # Assign the user chosen song version to desiredSongVersion to return it
-      desiredSongVersion = songInfo
+        # Assign the user chosen song version to desiredSongVersion to return it
+        desiredSongVersion = songInfo
+      end # End the if block
     # Let user know that errors were encountered   
     else
       puts "Detected errors while executing command: #{error}"
@@ -128,7 +138,7 @@ def displayAndChooseSongs(sQuery)
 end # End of the displayAndChooseSongs function
 
 """
-Function to get the user song name
+Function to get the user song name.
 
 @returns userSong The song chosen by the user
 @returns flags The flags chosen by the user
@@ -141,7 +151,7 @@ def getUserSongName()
     # Split the user text into the song query and flags
     songQuery = getSongName.split.reject { |part| part.start_with?('-') }.join(' ')
     flags = getSongName.split.select { |part| part.start_with?('-') }
-    userSong = displayAndChooseSongs(songQuery)
+    userSong = displayAndChooseSongs(songQuery, flags)
     return userSong, flags
 end # End the getUserSongName() function
 
@@ -159,10 +169,10 @@ def playSong(givenSong, givenFlags)
   $thread.run
   
   # Play only the audio of the song
-  if givenFlags.include?("-a") || givenFlags.empty?
+  if givenFlags.include?("-a") || givenFlags.empty? || givenFlags.include?("-o")
     system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video --volume=#{$songVolume} -")
   # Play only the video with the audio of the song
-  elsif givenFlags.include?("-v")
+  elsif givenFlags.include?("-v") || givenFlags.include?("-o")
     system("yt-dlp --no-playlist -o - '#{songId}' | mpv --volume=#{$songVolume} -")
   # Exit the program safely
   else
@@ -182,12 +192,13 @@ def scriptRun()
   snName, snFlags = getUserSongName()
 
   # Display to the user the chosen song
-  puts "You have chosen #{snName[1]} with #{snFlags}"
+  puts "Playing #{snName[0]} with #{snFlags}"
 
   # Play the given song
   playSong(snName, snFlags)
 end # End the scriptRun function
 
+# Execute the thread function and the run the main program script
 executeThread()
 scriptRun()
 
