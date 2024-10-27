@@ -35,4 +35,4 @@ This is a personal project where I created to listen to music as I code. Since, 
 ## Running the script
 * ruby Muterm.rb
 
-### Thank you for checking this repository. I may come back to it and update it more one day.
+### Thank you for checking this repository. I may come back to it and update it one day.
