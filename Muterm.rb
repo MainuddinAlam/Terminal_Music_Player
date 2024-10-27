@@ -17,7 +17,7 @@ These are some helpful flags you can give alongside the song name.
      -l loop the song
 
 These are some helpful keys that you can use while the song is playing.
-     S - To stop looping
+     U - To stop looping
      E - To exit the program
      M - Mute
      P - Pause the song
@@ -123,10 +123,10 @@ Function to implement functionality of the flags
 """
 def flagCode(songId, givenFlags)
     # Play only the audio of the song
-    if givenFlags.include?("-a") || givenFlags.empty? || givenFlags.include?("-o")
+    if givenFlags.include?("-a") || givenFlags.empty? || givenFlags.include?("-o") || givenFlags.include?("-l")
       system("yt-dlp -f bestaudio --no-playlist -o - '#{songId}' | mpv --no-video --volume=#{$songVolume} -")
     # Play only the video with the audio of the song
-    elsif givenFlags.include?("-v") || givenFlags.include?("-o")
+    elsif givenFlags.include?("-v") || givenFlags.include?("-o") || givenFlags.include?("-l")
       system("yt-dlp --no-playlist -o - '#{songId}' | mpv --volume=#{$songVolume} -")
     # Exit the program safely
     else
@@ -169,9 +169,11 @@ $thread = Thread.new do
 
     # Check for specific key presses
     case key
-    when 's'
+    when 'u'
       # Toggle looping when 'l' is pressed
-      $songLooping = !$songLooping
+      $songLooping = false
+      puts "Disabled looping"
+
     when 'e'
       # Exit the program when 'e' is pressed
       puts "Exiting program."
